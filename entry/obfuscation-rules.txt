@@ -1,23 +1,9 @@
-# Define project specific obfuscation rules here.
-# You can include the obfuscation configuration files in the current module's build-profile.json5.
+# Conservative release obfuscation for the first store build.
 #
-# For more details, see
-#   https://developer.huawei.com/consumer/cn/doc/harmonyos-guides/source-obfuscation
+# Keep property, top-level, filename and export-name obfuscation disabled for now.
+# This project uses object keys for RDB columns, JSON route params, service card data,
+# and framework entry points, so aggressive name obfuscation needs dedicated device
+# regression before being enabled.
 
-# Obfuscation options:
-# -disable-obfuscation: disable all obfuscations
-# -enable-property-obfuscation: obfuscate the property names
-# -enable-toplevel-obfuscation: obfuscate the names in the global scope
-# -compact: remove unnecessary blank spaces and all line feeds
-# -remove-log: remove all console.* statements
-# -print-namecache: print the name cache that contains the mapping from the old names to new names
-# -apply-namecache: reuse the given cache file
-
-# Keep options:
-# -keep-property-name: specifies property names that you want to keep
-# -keep-global-name: specifies names that you want to keep in the global scope
-
--enable-property-obfuscation
--enable-toplevel-obfuscation
--enable-filename-obfuscation
--enable-export-obfuscation
+-compact
+-remove-log

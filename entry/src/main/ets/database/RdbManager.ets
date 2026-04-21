@@ -13,52 +13,58 @@ export class RdbManager {
       return RdbManager.rdb
     }
 
-    RdbManager.rdb = await relationalStore.getRdbStore(context, {
-      name: DB_NAME,
-      securityLevel: relationalStore.SecurityLevel.S1
-    })
+    try {
+      RdbManager.rdb = await relationalStore.getRdbStore(context, {
+        name: DB_NAME,
+        securityLevel: relationalStore.SecurityLevel.S1
+      })
 
-    await RdbManager.rdb.executeSql(`
-      CREATE TABLE IF NOT EXISTS ${TABLE_NAME} (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        title TEXT NOT NULL,
-        targetDate INTEGER,
-        sortIndex INTEGER,
-        themeColor TEXT,
-        isLunarDate INTEGER,
-        type TEXT NOT NULL DEFAULT 'countdown',
-        status TEXT NOT NULL DEFAULT 'future',
-        note TEXT,
-        reminderType TEXT,
-        reminderHour INTEGER,
-        reminderMinute INTEGER,
-        createTime INTEGER,
-        repeatType TEXT,
-        calendarEventId INTEGER,
-        agentReminderId INTEGER,
-        calendarType TEXT,
-        solarMonth INTEGER,
-        solarDay INTEGER,
-        lunarMonth INTEGER,
-        lunarDay INTEGER,
-        isLeapMonth INTEGER
-      )
-    `)
+      await RdbManager.rdb.executeSql(`
+        CREATE TABLE IF NOT EXISTS ${TABLE_NAME} (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          title TEXT NOT NULL,
+          targetDate INTEGER,
+          sortIndex INTEGER,
+          themeColor TEXT,
+          isLunarDate INTEGER,
+          type TEXT NOT NULL DEFAULT 'countdown',
+          status TEXT NOT NULL DEFAULT 'future',
+          note TEXT,
+          reminderType TEXT,
+          reminderHour INTEGER,
+          reminderMinute INTEGER,
+          createTime INTEGER,
+          repeatType TEXT,
+          calendarEventId INTEGER,
+          agentReminderId INTEGER,
+          calendarType TEXT,
+          solarMonth INTEGER,
+          solarDay INTEGER,
+          lunarMonth INTEGER,
+          lunarDay INTEGER,
+          isLeapMonth INTEGER
+        )
+      `)
 
-    await RdbManager.rdb.executeSql(`
-      CREATE TABLE IF NOT EXISTS ${REMINDER_INSTANCE_TABLE_NAME} (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        eventId INTEGER NOT NULL,
-        occurrenceDate INTEGER NOT NULL,
-        reminderTime INTEGER NOT NULL,
-        calendarEventId INTEGER,
-        agentReminderId INTEGER,
-        status TEXT NOT NULL DEFAULT 'scheduled',
-        reason TEXT,
-        createTime INTEGER,
-        updateTime INTEGER
-      )
-    `)
+      await RdbManager.rdb.executeSql(`
+        CREATE TABLE IF NOT EXISTS ${REMINDER_INSTANCE_TABLE_NAME} (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          eventId INTEGER NOT NULL,
+          occurrenceDate INTEGER NOT NULL,
+          reminderTime INTEGER NOT NULL,
+          calendarEventId INTEGER,
+          agentReminderId INTEGER,
+          status TEXT NOT NULL DEFAULT 'scheduled',
+          reason TEXT,
+          createTime INTEGER,
+          updateTime INTEGER
+        )
+      `)
+    } catch (error) {
+      RdbManager.rdb = null
+      AppLogger.error('RdbManager', `Failed to initialize database: ${error instanceof Error ? error.message : `${error}`}`)
+      throw new Error(`${error}`)
+    }
 
     await RdbManager.tryExecuteMigration(
       `CREATE UNIQUE INDEX IF NOT EXISTS idx_reminder_instances_event_time ON ${REMINDER_INSTANCE_TABLE_NAME} (eventId, reminderTime)`,

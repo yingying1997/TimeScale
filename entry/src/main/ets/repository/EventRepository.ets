@@ -9,52 +9,46 @@ export class EventRepository {
 
   static async getAllEvents(context: Context): Promise<EventItem[]> {
     const rdb = await RdbManager.getRdb(context)
-    const result = await rdb.querySql('SELECT * FROM events ORDER BY sortIndex ASC')
+    let result: relationalStore.ResultSet | undefined = undefined
     const events: EventItem[] = []
 
     try {
-      while (result.goToNextRow()) {
-        const getNullableLong = (col: number): number | undefined => {
-          if (col === -1) return undefined
-          const value = result.getLong(col)
-          return value === null ? undefined : value
-        }
-
-        const getNullableString = (col: number): string | undefined => {
-          if (col === -1) return undefined
-          const value = result.getString(col)
-          return value === null ? undefined : value
-        }
+      result = await rdb.querySql('SELECT * FROM events ORDER BY sortIndex ASC')
+      while (EventRepository.goToNextRow(result)) {
+        const isLunarDate = EventRepository.getNullableLong(result, 'isLunarDate') === 1
 
         events.push({
-          id: result.getLong(result.getColumnIndex('id')),
-          title: result.getString(result.getColumnIndex('title')) || '',
-          targetDate: result.getLong(result.getColumnIndex('targetDate')),
-          sortIndex: result.getLong(result.getColumnIndex('sortIndex')),
-          themeColor: getNullableString(result.getColumnIndex('themeColor')) ?? EventRepository.DEFAULT_THEME_COLOR,
-          isLunarDate: getNullableLong(result.getColumnIndex('isLunarDate')) === 1,
-          note: getNullableString(result.getColumnIndex('note')),
-          reminderType: getNullableString(result.getColumnIndex('reminderType')) as 'on_day' | 'one_day_before' | 'none',
-          reminderHour: getNullableLong(result.getColumnIndex('reminderHour')),
-          reminderMinute: getNullableLong(result.getColumnIndex('reminderMinute')),
-          createTime: getNullableLong(result.getColumnIndex('createTime')) || Date.now(),
-          repeatType: getNullableString(result.getColumnIndex('repeatType')) as 'none' | 'monthly' | 'yearly',
-          calendarEventId: getNullableLong(result.getColumnIndex('calendarEventId')),
-          agentReminderId: getNullableLong(result.getColumnIndex('agentReminderId')),
-          calendarType: (getNullableString(result.getColumnIndex('calendarType')) as 'solar' | 'lunar' | undefined)
-            ?? (getNullableLong(result.getColumnIndex('isLunarDate')) === 1 ? 'lunar' : 'solar'),
-          solarMonth: getNullableLong(result.getColumnIndex('solarMonth')),
-          solarDay: getNullableLong(result.getColumnIndex('solarDay')),
-          lunarMonth: getNullableLong(result.getColumnIndex('lunarMonth')),
-          lunarDay: getNullableLong(result.getColumnIndex('lunarDay')),
+          id: EventRepository.getRequiredLong(result, 'id'),
+          title: EventRepository.getNullableString(result, 'title') || '',
+          targetDate: EventRepository.getRequiredLong(result, 'targetDate'),
+          sortIndex: EventRepository.getRequiredLong(result, 'sortIndex'),
+          themeColor: EventRepository.getNullableString(result, 'themeColor') ?? EventRepository.DEFAULT_THEME_COLOR,
+          isLunarDate: isLunarDate,
+          note: EventRepository.getNullableString(result, 'note'),
+          reminderType: EventRepository.getNullableString(result, 'reminderType') as 'on_day' | 'one_day_before' | 'none',
+          reminderHour: EventRepository.getNullableLong(result, 'reminderHour'),
+          reminderMinute: EventRepository.getNullableLong(result, 'reminderMinute'),
+          createTime: EventRepository.getNullableLong(result, 'createTime') || Date.now(),
+          repeatType: EventRepository.getNullableString(result, 'repeatType') as 'none' | 'monthly' | 'yearly',
+          calendarEventId: EventRepository.getNullableLong(result, 'calendarEventId'),
+          agentReminderId: EventRepository.getNullableLong(result, 'agentReminderId'),
+          calendarType: (EventRepository.getNullableString(result, 'calendarType') as 'solar' | 'lunar' | undefined)
+            ?? (isLunarDate ? 'lunar' : 'solar'),
+          solarMonth: EventRepository.getNullableLong(result, 'solarMonth'),
+          solarDay: EventRepository.getNullableLong(result, 'solarDay'),
+          lunarMonth: EventRepository.getNullableLong(result, 'lunarMonth'),
+          lunarDay: EventRepository.getNullableLong(result, 'lunarDay'),
           isLeapMonth: (() => {
-            const value = getNullableLong(result.getColumnIndex('isLeapMonth'))
+            const value = EventRepository.getNullableLong(result, 'isLeapMonth')
             return value === undefined ? undefined : value === 1
           })(),
         })
       }
+    } catch (error) {
+      AppLogger.error('EventRepository', `Failed to query events: ${error instanceof Error ? error.message : `${error}`}`)
+      throw new Error(`${error}`)
     } finally {
-      result.close()
+      EventRepository.closeResult(result)
     }
 
     EventRepository.normalizeLegacyFields(events)
@@ -75,62 +69,77 @@ export class EventRepository {
   static async addEvent(context: Context, event: EventItem): Promise<number> {
     const rdb = await RdbManager.getRdb(context)
     const list = await EventRepository.getAllEvents(context)
-    const rowId = await rdb.insert('events', {
-      title: event.title,
-      targetDate: event.targetDate,
-      sortIndex: list.length,
-      themeColor: event.themeColor ?? EventRepository.DEFAULT_THEME_COLOR,
-      isLunarDate: event.isLunarDate ? 1 : 0,
-      note: event.note,
-      reminderType: event.reminderType,
-      reminderHour: event.reminderHour,
-      reminderMinute: event.reminderMinute,
-      createTime: event.createTime || Date.now(),
-      repeatType: event.repeatType,
-      calendarEventId: event.calendarEventId,
-      agentReminderId: event.agentReminderId,
-      calendarType: event.calendarType ?? (event.isLunarDate ? 'lunar' : 'solar'),
-      solarMonth: event.solarMonth,
-      solarDay: event.solarDay,
-      lunarMonth: event.lunarMonth,
-      lunarDay: event.lunarDay,
-      isLeapMonth: event.isLeapMonth ? 1 : 0,
-    })
-    return Number(rowId)
+    try {
+      const rowId = await rdb.insert('events', {
+        title: event.title,
+        targetDate: event.targetDate,
+        sortIndex: list.length,
+        themeColor: event.themeColor ?? EventRepository.DEFAULT_THEME_COLOR,
+        isLunarDate: event.isLunarDate ? 1 : 0,
+        note: event.note,
+        reminderType: event.reminderType,
+        reminderHour: event.reminderHour,
+        reminderMinute: event.reminderMinute,
+        createTime: event.createTime || Date.now(),
+        repeatType: event.repeatType,
+        calendarEventId: event.calendarEventId,
+        agentReminderId: event.agentReminderId,
+        calendarType: event.calendarType ?? (event.isLunarDate ? 'lunar' : 'solar'),
+        solarMonth: event.solarMonth,
+        solarDay: event.solarDay,
+        lunarMonth: event.lunarMonth,
+        lunarDay: event.lunarDay,
+        isLeapMonth: event.isLeapMonth ? 1 : 0,
+      })
+      return Number(rowId)
+    } catch (error) {
+      AppLogger.error('EventRepository', `Failed to add event: ${error instanceof Error ? error.message : `${error}`}`)
+      throw new Error(`${error}`)
+    }
   }
 
   static async updateEvent(context: Context, event: EventItem): Promise<void> {
     const rdb = await RdbManager.getRdb(context)
     const predicates = new relationalStore.RdbPredicates('events')
     predicates.equalTo('id', event.id)
-    await rdb.update({
-      title: event.title,
-      targetDate: event.targetDate,
-      sortIndex: event.sortIndex,
-      themeColor: event.themeColor ?? EventRepository.DEFAULT_THEME_COLOR,
-      isLunarDate: event.isLunarDate ? 1 : 0,
-      note: event.note,
-      reminderType: event.reminderType,
-      reminderHour: event.reminderHour,
-      reminderMinute: event.reminderMinute,
-      createTime: event.createTime,
-      repeatType: event.repeatType,
-      calendarEventId: event.calendarEventId,
-      agentReminderId: event.agentReminderId,
-      calendarType: event.calendarType ?? (event.isLunarDate ? 'lunar' : 'solar'),
-      solarMonth: event.solarMonth,
-      solarDay: event.solarDay,
-      lunarMonth: event.lunarMonth,
-      lunarDay: event.lunarDay,
-      isLeapMonth: event.isLeapMonth ? 1 : 0,
-    }, predicates)
+    try {
+      await rdb.update({
+        title: event.title,
+        targetDate: event.targetDate,
+        sortIndex: event.sortIndex,
+        themeColor: event.themeColor ?? EventRepository.DEFAULT_THEME_COLOR,
+        isLunarDate: event.isLunarDate ? 1 : 0,
+        note: event.note,
+        reminderType: event.reminderType,
+        reminderHour: event.reminderHour,
+        reminderMinute: event.reminderMinute,
+        createTime: event.createTime,
+        repeatType: event.repeatType,
+        calendarEventId: event.calendarEventId,
+        agentReminderId: event.agentReminderId,
+        calendarType: event.calendarType ?? (event.isLunarDate ? 'lunar' : 'solar'),
+        solarMonth: event.solarMonth,
+        solarDay: event.solarDay,
+        lunarMonth: event.lunarMonth,
+        lunarDay: event.lunarDay,
+        isLeapMonth: event.isLeapMonth ? 1 : 0,
+      }, predicates)
+    } catch (error) {
+      AppLogger.error('EventRepository', `Failed to update event ${event.id}: ${error instanceof Error ? error.message : `${error}`}`)
+      throw new Error(`${error}`)
+    }
   }
 
   static async deleteEvent(context: Context, id: number): Promise<void> {
     const rdb = await RdbManager.getRdb(context)
     const predicates = new relationalStore.RdbPredicates('events')
     predicates.equalTo('id', id)
-    await rdb.delete(predicates)
+    try {
+      await rdb.delete(predicates)
+    } catch (error) {
+      AppLogger.error('EventRepository', `Failed to delete event ${id}: ${error instanceof Error ? error.message : `${error}`}`)
+      throw new Error(`${error}`)
+    }
   }
 
   static async moveItem(context: Context, from: number, to: number): Promise<void> {
@@ -144,7 +153,14 @@ export class EventRepository {
     list.splice(from, 1)
     list.splice(to, 0, item)
 
-    await rdb.executeSql('BEGIN TRANSACTION')
+    let transactionOpened: boolean = false
+    try {
+      await rdb.executeSql('BEGIN TRANSACTION')
+      transactionOpened = true
+    } catch (error) {
+      AppLogger.warn('EventRepository',
+        `moveItem transaction not supported, fallback to non-transaction updates: ${error instanceof Error ? error.message : `${error}`}`)
+    }
     try {
       for (let i = 0; i < list.length; i++) {
         list[i].sortIndex = i
@@ -152,9 +168,13 @@ export class EventRepository {
         predicates.equalTo('id', list[i].id)
         await rdb.update({ sortIndex: list[i].sortIndex }, predicates)
       }
-      await rdb.executeSql('COMMIT')
+      if (transactionOpened) {
+        await rdb.executeSql('COMMIT')
+      }
     } catch (error) {
-      await rdb.executeSql('ROLLBACK')
+      if (transactionOpened) {
+        await EventRepository.rollbackSafely(rdb, 'moveItem')
+      }
       throw new Error(`${error}`)
     }
   }
@@ -181,7 +201,7 @@ export class EventRepository {
       }
     } catch (error) {
       if (transactionOpened) {
-        await rdb.executeSql('ROLLBACK')
+        await EventRepository.rollbackSafely(rdb, 'saveSortOrder')
         AppLogger.error('EventRepository',
           `saveSortOrder rollback: ${error instanceof Error ? error.message : `${error}`}`)
       }
@@ -202,5 +222,79 @@ export class EventRepository {
         event.isLeapMonth = event.isLeapMonth ?? lunarInfo.isLeapMonth
       }
     })
+  }
+
+  private static goToNextRow(result: relationalStore.ResultSet): boolean {
+    try {
+      return result.goToNextRow()
+    } catch (error) {
+      AppLogger.error('EventRepository', `Failed to move result cursor: ${error instanceof Error ? error.message : `${error}`}`)
+      throw new Error(`${error}`)
+    }
+  }
+
+  private static getColumnIndex(result: relationalStore.ResultSet, name: string): number {
+    try {
+      return result.getColumnIndex(name)
+    } catch (error) {
+      AppLogger.warn('EventRepository', `Column ${name} not found: ${error instanceof Error ? error.message : `${error}`}`)
+      return -1
+    }
+  }
+
+  private static getRequiredLong(result: relationalStore.ResultSet, name: string): number {
+    const value = EventRepository.getNullableLong(result, name)
+    if (value === undefined) {
+      throw new Error(`Column ${name} is required`)
+    }
+    return value
+  }
+
+  private static getNullableLong(result: relationalStore.ResultSet, name: string): number | undefined {
+    const col = EventRepository.getColumnIndex(result, name)
+    if (col === -1) {
+      return undefined
+    }
+    try {
+      const value = result.getLong(col)
+      return value === null ? undefined : value
+    } catch (error) {
+      AppLogger.warn('EventRepository', `Failed to read number column ${name}: ${error instanceof Error ? error.message : `${error}`}`)
+      return undefined
+    }
+  }
+
+  private static getNullableString(result: relationalStore.ResultSet, name: string): string | undefined {
+    const col = EventRepository.getColumnIndex(result, name)
+    if (col === -1) {
+      return undefined
+    }
+    try {
+      const value = result.getString(col)
+      return value === null ? undefined : value
+    } catch (error) {
+      AppLogger.warn('EventRepository', `Failed to read string column ${name}: ${error instanceof Error ? error.message : `${error}`}`)
+      return undefined
+    }
+  }
+
+  private static closeResult(result: relationalStore.ResultSet | undefined): void {
+    if (!result) {
+      return
+    }
+    try {
+      result.close()
+    } catch (error) {
+      AppLogger.warn('EventRepository', `Failed to close result set: ${error instanceof Error ? error.message : `${error}`}`)
+    }
+  }
+
+  private static async rollbackSafely(rdb: relationalStore.RdbStore, label: string): Promise<void> {
+    try {
+      await rdb.executeSql('ROLLBACK')
+    } catch (error) {
+      AppLogger.error('EventRepository',
+        `${label} rollback failed: ${error instanceof Error ? error.message : `${error}`}`)
+    }
   }
 }

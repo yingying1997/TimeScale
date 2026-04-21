@@ -175,31 +175,55 @@ export class ReminderService {
   }
 
   private static async getOrCreateCalendar(context: common.UIAbilityContext | Context): Promise<calendarManager.Calendar> {
-    const manager = calendarManager.getCalendarManager(context)
-    const calendars = await manager.getAllCalendars()
-    for (let i = 0; i < calendars.length; i++) {
-      const account = calendars[i].getAccount()
-      if (account.name === ReminderService.ACCOUNT_NAME && account.type === calendarManager.CalendarType.LOCAL) {
-        await ReminderService.ensureCalendarReminderEnabled(calendars[i])
-        return calendars[i]
+    try {
+      const manager = calendarManager.getCalendarManager(context)
+      const calendars = await manager.getAllCalendars()
+      for (let i = 0; i < calendars.length; i++) {
+        const account = ReminderService.getCalendarAccountSafely(calendars[i])
+        if (account && account.name === ReminderService.ACCOUNT_NAME && account.type === calendarManager.CalendarType.LOCAL) {
+          await ReminderService.ensureCalendarReminderEnabled(calendars[i])
+          return calendars[i]
+        }
       }
-    }
 
-    const account: calendarManager.CalendarAccount = {
-      name: ReminderService.ACCOUNT_NAME,
-      type: calendarManager.CalendarType.LOCAL,
-      displayName: ReminderService.ACCOUNT_DISPLAY_NAME
+      const account: calendarManager.CalendarAccount = {
+        name: ReminderService.ACCOUNT_NAME,
+        type: calendarManager.CalendarType.LOCAL,
+        displayName: ReminderService.ACCOUNT_DISPLAY_NAME
+      }
+      const calendar = await manager.createCalendar(account)
+      await ReminderService.ensureCalendarReminderEnabled(calendar)
+      return calendar
+    } catch (error) {
+      const businessError = error as BusinessError
+      AppLogger.error('ReminderService',
+        `Failed to get or create calendar. code=${businessError.code}, message=${businessError.message}`)
+      throw new Error(`${error}`)
     }
-    const calendar = await manager.createCalendar(account)
-    await ReminderService.ensureCalendarReminderEnabled(calendar)
-    return calendar
   }
 
   private static async ensureCalendarReminderEnabled(calendar: calendarManager.Calendar): Promise<void> {
-    await calendar.setConfig({
-      enableReminder: true,
-      color: AppTheme.COLOR_PRIMARY
-    })
+    try {
+      await calendar.setConfig({
+        enableReminder: true,
+        color: AppTheme.COLOR_PRIMARY
+      })
+    } catch (error) {
+      const businessError = error as BusinessError
+      AppLogger.warn('ReminderService',
+        `Failed to enable calendar reminder. code=${businessError.code}, message=${businessError.message}`)
+    }
+  }
+
+  private static getCalendarAccountSafely(calendar: calendarManager.Calendar): calendarManager.CalendarAccount | undefined {
+    try {
+      return calendar.getAccount()
+    } catch (error) {
+      const businessError = error as BusinessError
+      AppLogger.warn('ReminderService',
+        `Failed to read calendar account. code=${businessError.code}, message=${businessError.message}`)
+      return undefined
+    }
   }
 
   private static buildCalendarEvent(event: EventItem, reminderDate: Date): calendarManager.Event {

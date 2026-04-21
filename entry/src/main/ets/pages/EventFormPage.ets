@@ -98,8 +98,13 @@ struct EventFormPage {
     })
   }
 
-  private showDialog(options: promptAction.ShowDialogOptions): Promise<promptAction.ShowDialogSuccessResponse> {
-    return this.getUIContext().getPromptAction().showDialog(options)
+  private async showDialog(options: promptAction.ShowDialogOptions): Promise<promptAction.ShowDialogSuccessResponse> {
+    try {
+      return await this.getUIContext().getPromptAction().showDialog(options)
+    } catch (error) {
+      AppLogger.error('EventFormPage', `Failed to show dialog: ${error instanceof Error ? error.message : `${error}`}`)
+      throw new Error(`${error}`)
+    }
   }
 
   private pushListPage(): void {

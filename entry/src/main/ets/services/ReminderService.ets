@@ -20,7 +20,7 @@ export interface ReminderSyncResult {
 
 export class ReminderService {
   private static readonly ACCOUNT_NAME: string = 'timescale_calendar'
-  private static readonly ACCOUNT_DISPLAY_NAME: string = 'TimeScale'
+  private static readonly ACCOUNT_DISPLAY_NAME: string = '时光刻度'
   private static readonly CALENDAR_PERMISSIONS: Permissions[] = [
     'ohos.permission.READ_CALENDAR',
     'ohos.permission.WRITE_CALENDAR'

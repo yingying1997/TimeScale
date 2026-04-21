@@ -1,0 +1,54 @@
+export class AppTheme {
+  static readonly PAGE_PADDING: number = 24
+  static readonly CARD_RADIUS: number = 24
+
+  static readonly COLOR_BG_TOP: string = '#F6F9FF'
+  static readonly COLOR_BG_MIDDLE: string = '#F8FAFC'
+  static readonly COLOR_BG_BOTTOM: string = '#F3F6FB'
+  static readonly COLOR_SURFACE: string = '#FFFFFF'
+  static readonly COLOR_SURFACE_SOFT: string = '#F6F8FC'
+  static readonly COLOR_PRIMARY: string = '#1D4ED8'
+  static readonly COLOR_PRIMARY_DARK: string = '#1E3A8A'
+  static readonly COLOR_PRIMARY_LIGHT: string = '#DBEAFE'
+  static readonly COLOR_INFO: string = '#3B82F6'
+  static readonly COLOR_SKY: string = '#0EA5E9'
+  static readonly COLOR_ORANGE: string = '#F97316'
+  static readonly COLOR_SUCCESS: string = '#22C55E'
+  static readonly COLOR_SUCCESS_DARK: string = '#16A34A'
+  static readonly COLOR_WARNING: string = '#F59E0B'
+  static readonly COLOR_WARNING_DARK: string = '#EA580C'
+  static readonly COLOR_DANGER: string = '#EF4444'
+  static readonly COLOR_ACCENT: string = '#8B5CF6'
+  static readonly COLOR_TEXT_PRIMARY: string = '#1F2A3D'
+  static readonly COLOR_TEXT_SECONDARY: string = '#5B6880'
+  static readonly COLOR_TEXT_TERTIARY: string = '#8B97AC'
+  static readonly COLOR_TEXT_MUTED: string = '#64748B'
+  static readonly COLOR_PLACEHOLDER: string = '#94A3B8'
+  static readonly COLOR_BORDER: string = '#E3EAF5'
+  static readonly COLOR_CHART_TRACK: string = '#EEF2F7'
+  static readonly COLOR_CHART_TRACK_SOFT: string = '#EAF0FA'
+  static readonly COLOR_CHART_GRID: string = '#E2E8F0'
+  static readonly COLOR_CHART_IDLE: string = '#CFE0FF'
+  static readonly COLOR_CHART_TEXT: string = '#0F172A'
+  static readonly COLOR_TAG_BG: string = '#F4F8FF'
+  static readonly COLOR_TAG_TEXT: string = '#4F6FA7'
+  static readonly COLOR_INFO_SOFT: string = '#EEF6FF'
+  static readonly COLOR_SUCCESS_SOFT: string = '#ECFDF5'
+  static readonly COLOR_WARNING_SOFT: string = '#FFF7ED'
+  static readonly COLOR_OVERLAY: string = '#0F172A55'
+  static readonly COLOR_SHEET_SHADOW: string = '#0F172A18'
+  static readonly SHADOW_COLOR: string = '#24324A12'
+  static readonly PRIMARY_SHADOW_COLOR: string = '#1D4ED826'
+  static readonly PRIMARY_DRAG_SHADOW_COLOR: string = '#1D4ED81F'
+
+  static readonly FONT_PAGE_TITLE: number = 24
+  static readonly FONT_EMPTY_TITLE: number = 18
+  static readonly FONT_CARD_TITLE: number = 16
+  static readonly FONT_BODY: number = 14
+  static readonly FONT_BODY_SMALL: number = 13
+  static readonly FONT_CAPTION: number = 12
+  static readonly FONT_HINT: number = 11
+  static readonly FONT_TAG: number = 10
+  static readonly FONT_NUMBER: number = 26
+  static readonly FONT_NUMBER_SMALL: number = 20
+}

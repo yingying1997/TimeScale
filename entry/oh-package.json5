@@ -1,0 +1,10 @@
+{
+  "name": "entry",
+  "version": "1.0.0",
+  "description": "时光刻度主业务模块，包含事件管理、提醒、统计和服务卡片能力。",
+  "main": "",
+  "author": "Ying Studio",
+  "license": "UNLICENSED",
+  "dependencies": {}
+}
+

@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>时光刻度隐私政策</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #f5f7fb;
+      --surface: #ffffff;
+      --text: #1f2937;
+      --muted: #667085;
+      --line: #dbe3f0;
+      --accent: #4567d6;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB",
+        "Microsoft YaHei", sans-serif;
+      background: linear-gradient(180deg, #eef3ff 0%, var(--bg) 100%);
+      color: var(--text);
+      line-height: 1.7;
+    }
+
+    .wrap {
+      width: min(880px, calc(100% - 32px));
+      margin: 0 auto;
+      padding: 40px 0 56px;
+    }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      box-shadow: 0 12px 32px rgba(27, 39, 94, 0.08);
+      padding: 28px 24px;
+    }
+
+    h1, h2 {
+      margin: 0;
+    }
+
+    h1 {
+      font-size: 30px;
+      line-height: 1.25;
+    }
+
+    h2 {
+      font-size: 20px;
+      margin-top: 28px;
+      margin-bottom: 12px;
+    }
+
+    p, li {
+      font-size: 15px;
+      margin: 0 0 10px;
+    }
+
+    ul {
+      margin: 0;
+      padding-left: 20px;
+    }
+
+    .meta {
+      margin-top: 12px;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .lead {
+      margin-top: 20px;
+    }
+
+    .note {
+      margin-top: 16px;
+      padding: 14px 16px;
+      border-radius: 10px;
+      background: #f4f7ff;
+      border: 1px solid #d9e3ff;
+      color: #334155;
+    }
+
+    a {
+      color: var(--accent);
+    }
+
+    @media (max-width: 640px) {
+      .wrap {
+        width: min(100% - 20px, 880px);
+        padding: 20px 0 28px;
+      }
+
+      .card {
+        padding: 22px 16px;
+        border-radius: 10px;
+      }
+
+      h1 {
+        font-size: 26px;
+      }
+
+      h2 {
+        font-size: 18px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <section class="card">
+      <h1>时光刻度隐私政策</h1>
+      <div class="meta">
+        生效日期：2026年4月23日<br>
+        开发者：Ying Studio
+      </div>
+
+      <p class="lead">
+        欢迎使用时光刻度。我们非常重视您的个人信息和隐私保护。本隐私政策用于说明时光刻度在提供功能服务过程中如何处理相关信息。
+      </p>
+
+      <h2>一、我们处理的信息范围</h2>
+      <p>时光刻度是一款本地事件记录与提醒应用，主要用于记录纪念日、生日、倒数日等时间信息。应用本身不提供账号注册、登录、云同步或社交分享功能。</p>
+      <p>在您使用应用时，我们可能处理以下信息：</p>
+      <ul>
+        <li>您主动输入的事件信息，例如标题、备注、日期、重复方式、提醒方式、颜色等。</li>
+        <li>为展示和计算事件而在本地生成的辅助数据，例如事件排序、提醒实例和统计结果。</li>
+        <li>当您启用提醒功能时，为创建系统日历提醒所需的相关事件信息。</li>
+      </ul>
+
+      <h2>二、信息的存储方式</h2>
+      <p>时光刻度将您的事件数据和提醒相关数据保存在设备本地数据库中，用于完成事件展示、排序、统计和提醒等核心功能。</p>
+      <p>除您主动使用系统能力产生的数据外，应用不会将上述信息上传至开发者服务器。</p>
+
+      <h2>三、权限使用说明</h2>
+      <p>为实现提醒相关功能，时光刻度可能向您申请以下权限：</p>
+      <ul>
+        <li><strong>读取日历权限（READ_CALENDAR）</strong>：用于读取或核对系统日历中的相关提醒信息。</li>
+        <li><strong>写入日历权限（WRITE_CALENDAR）</strong>：用于在您主动开启提醒后，将对应事件写入系统日历以生成提醒。</li>
+      </ul>
+      <p>如果您拒绝上述权限，您仍可继续使用事件记录、倒数日显示、统计等功能，但系统日历提醒功能可能无法正常使用。</p>
+
+      <h2>四、第三方服务与信息共享</h2>
+      <p>时光刻度当前未接入第三方广告 SDK、统计 SDK、登录 SDK 或云端数据同步服务。</p>
+      <p>除以下情形外，我们不会向第三方提供您的事件数据：</p>
+      <ul>
+        <li>在您主动开启提醒功能时，将必要的事件信息写入设备系统日历，以便系统生成提醒。</li>
+        <li>法律法规要求或监管机关依法要求提供。</li>
+      </ul>
+
+      <h2>五、删除与更正</h2>
+      <p>您可以在应用内自行新增、编辑或删除事件数据。删除事件后，应用会尝试同步清理其对应的系统日历提醒信息。</p>
+      <p>如果部分系统提醒因系统状态或权限变化未能及时清理，您也可以在系统日历中手动删除。</p>
+
+      <h2>六、未成年人保护</h2>
+      <p>本应用不面向特定未成年人群体提供专门服务，也不主动收集未成年人的个人信息。若监护人认为未成年人在未经同意的情况下使用了相关功能，可通过应用市场中的开发者联系方式与我们联系。</p>
+
+      <h2>七、隐私政策的更新</h2>
+      <p>当应用功能、权限使用范围或法律法规要求发生变化时，我们可能会对本隐私政策进行更新。更新后的版本将在本页面发布，并自发布或标注的生效日期起生效。</p>
+
+      <h2>八、联系我们</h2>
+      <p>如果您对本隐私政策有任何疑问、意见或建议，可通过应用市场页面展示的开发者联系邮箱或联系渠道与我们取得联系。</p>
+
+      <div class="note">
+        本政策适用于时光刻度（包名：com.ying.timescale）当前公开发布版本。
+      </div>
+    </section>
+  </main>
+</body>
+</html>

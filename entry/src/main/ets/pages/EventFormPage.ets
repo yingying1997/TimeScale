@@ -5,7 +5,6 @@ import { CardRefreshService } from '../services/CardRefreshService'
 import { AppTheme } from '../theme/AppTheme'
 import { EventFormDisplayHelper } from '../helpers/EventFormDisplayHelper'
 import { AppLogger } from '../utils/AppLogger'
-import { LunarDateService } from '../services/LunarDateService'
 import {
   EventFormMapper,
   EventFormStateData,
@@ -518,14 +517,8 @@ struct EventFormPage {
 
       Column({ space: 12 }) {
         this.EventDateActionRow()
-        if (this.dateHintText().length > 0) {
-          this.InlineHint(this.dateHintText())
-        }
-        this.ReminderActionRow()
         this.RepeatActionRow()
-        if (this.repeatHintText().length > 0) {
-          this.InlineHint(this.repeatHintText())
-        }
+        this.ReminderActionRow()
       }
       .width('100%')
       .padding({ left: 18, right: 18, top: 18, bottom: 20 })
@@ -768,16 +761,6 @@ struct EventFormPage {
   }
 
   @Builder
-  private InlineHint(text: string) {
-    Text(text)
-      .fontSize(AppTheme.FONT_HINT)
-      .lineHeight(17)
-      .fontColor(this.textTertiary)
-      .width('100%')
-      .padding({ left: 6, right: 6, top: -2 })
-  }
-
-  @Builder
   private EventDateActionRow() {
     Row() {
       Text('事件日期')
@@ -868,58 +851,5 @@ struct EventFormPage {
     )
   }
 
-  private dateHintText(): string {
-    if (!this.isLunarDate) {
-      return ''
-    }
-    if (this.repeatType === 'yearly') {
-      if (this.isSelectedLunarLeapMonth()) {
-        return '按同一农历闰月月日重复；无对应闰月年份按平月提醒。'
-      }
-      return ''
-    }
-    return ''
-  }
-
-  private repeatHintText(): string {
-    const selectedDay = this.selectedDate.getDate()
-    const selectedMonth = this.selectedDate.getMonth() + 1
-    if (this.repeatType === 'none') {
-      return ''
-    }
-    if (this.isLunarDate) {
-      if (this.repeatType === 'monthly') {
-        return '开启每月重复后，会按当前农历日自动计算后续事件。'
-      }
-      return '开启每年重复后，会按当前农历月日自动计算后续事件。'
-    }
-    if (!this.isLunarDate && this.repeatType === 'monthly' && selectedDay >= 29) {
-      return `开启每月重复后，会按每月 ${selectedDay} 号计算；无该日期时按当月最后一天。`
-    }
-    if (!this.isLunarDate && this.repeatType === 'yearly' && selectedMonth === 2 && selectedDay === 29) {
-      return '开启每年重复后，会按 2 月 29 日计算；非闰年按 2 月 28 日。'
-    }
-    if (this.repeatType === 'monthly') {
-      return `开启每月重复后，会按每月 ${selectedDay} 号自动计算后续事件。`
-    }
-    if (this.repeatType === 'yearly') {
-      return `开启每年重复后，会按每年 ${selectedMonth} 月 ${selectedDay} 日自动计算后续事件。`
-    }
-    return ''
-  }
-
-  private isSelectedLunarLeapMonth(): boolean {
-    if (!this.isLunarDate) {
-      return false
-    }
-    return LunarDateService.getLunarDateInfo(this.selectedDate).isLeapMonth
-  }
-
 }
-
-
-
-
-
-
 

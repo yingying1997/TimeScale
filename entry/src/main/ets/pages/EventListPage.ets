@@ -9,6 +9,7 @@ import { AppTheme } from '../theme/AppTheme'
 import { EventListViewHelper } from '../helpers/EventListViewHelper'
 import { EventSortService } from '../services/EventSortService'
 import { AppLogger } from '../utils/AppLogger'
+import { PrivacyConsentService } from '../services/PrivacyConsentService'
 
 interface GestureEventPosition {
   globalY?: number
@@ -45,6 +46,7 @@ struct EventListPage {
 
   private readonly store: EventStore = eventStore
   private readonly listScroller: ListScroller = new ListScroller()
+  private privacyDialogVisible: boolean = false
   private dragRefOffset: number = 0
   private autoScrollTimer: number = -1
   private autoScrollDirection: number = 0
@@ -81,13 +83,12 @@ struct EventListPage {
   private readonly defaultThemeColor: string = AppTheme.COLOR_PRIMARY
 
   async aboutToAppear() {
-    await this.loadEvents()
-    this.openPendingEventIfNeeded()
+    await this.refreshPageState()
   }
 
   onPageShow() {
-    this.loadEvents().then(() => {
-      this.openPendingEventIfNeeded()
+    this.refreshPageState().catch((error: Error) => {
+      AppLogger.error('EventListPage', `Failed to refresh page state: ${error instanceof Error ? error.message : `${error}`}`)
     })
   }
 
@@ -120,6 +121,68 @@ struct EventListPage {
     this.getUIContext().getRouter().pushUrl({ url: url }).catch((error: Error) => {
       AppLogger.error('EventListPage', `Failed to navigate to ${url}: ${error instanceof Error ? error.message : `${error}`}`)
     })
+  }
+
+  private async ensurePrivacyConsent(): Promise<boolean> {
+    if (this.privacyDialogVisible) {
+      return false
+    }
+
+    const hasAgreed = await PrivacyConsentService.hasAgreed(this.getDataContext())
+    if (hasAgreed) {
+      return true
+    }
+
+    this.privacyDialogVisible = true
+    try {
+      const result = await this.showDialog({
+        title: '隐私政策',
+        message: '欢迎使用时光刻度。为保障您的合法权益，请先阅读并同意《隐私政策》后继续使用应用。',
+        buttons: [
+          { text: '查看隐私政策', color: this.colorPrimary },
+          { text: '不同意', color: this.colorDanger },
+          { text: '同意并继续', color: this.colorPrimary }
+        ],
+        isModal: true
+      })
+
+      if (result.index === 0) {
+        this.pushUrl('pages/PrivacyPolicyPage')
+        return false
+      }
+
+      if (result.index === 1) {
+        await this.terminateCurrentAbility()
+        return false
+      }
+
+      await PrivacyConsentService.markAgreed(this.getDataContext())
+      this.showToast('已同意隐私政策')
+      return true
+    } catch (error) {
+      AppLogger.error('EventListPage', `Failed to handle privacy consent: ${error instanceof Error ? error.message : `${error}`}`)
+      this.showToast('隐私政策处理失败，请稍后重试')
+      return false
+    } finally {
+      this.privacyDialogVisible = false
+    }
+  }
+
+  private async refreshPageState(): Promise<void> {
+    await this.loadEvents()
+    const hasConsent = await this.ensurePrivacyConsent()
+    if (hasConsent) {
+      this.openPendingEventIfNeeded()
+    }
+  }
+
+  private async terminateCurrentAbility(): Promise<void> {
+    try {
+      const abilityContext = this.getUIContext().getHostContext() as common.UIAbilityContext
+      await abilityContext.terminateSelf()
+    } catch (error) {
+      AppLogger.error('EventListPage', `Failed to terminate ability: ${error instanceof Error ? error.message : `${error}`}`)
+    }
   }
 
   private async reloadCards(): Promise<void> {

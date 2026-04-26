@@ -2,6 +2,7 @@
   "src": [
     "pages/EventListPage",
     "pages/EventFormPage",
-    "pages/StatisticsPage"
+    "pages/StatisticsPage",
+    "pages/PrivacyPolicyPage"
   ]
 }

@@ -1,6 +1,10 @@
 # 时光刻度
 
 时光刻度是一款面向 HarmonyOS 的重要日子、倒计时与纪念日管理应用。应用支持公历/农历日期记录、重复事件、系统日历提醒、桌面服务卡片和统计分析，适合用于生日、纪念日、考试、旅行、项目节点等时间节点的长期管理。
+## 项目截图
+| 列表页                                             | 详情页                                             | 统计页                                             | 卡片页                                                       |
+|-------------------------------------------------|-------------------------------------------------|-------------------------------------------------|-----------------------------------------------------------|
+| ![列表页.png](projectScreenshot/%E5%88%97%E8%A1%A8%E9%A1%B5.png) | ![详情页.png](projectScreenshot/%E8%AF%A6%E6%83%85%E9%A1%B5.png) | ![统计页.png](projectScreenshot/%E7%BB%9F%E8%AE%A1%E9%A1%B5.png) | ![服务卡片.png](projectScreenshot/%E6%9C%8D%E5%8A%A1%E5%8D%A1%E7%89%87.png) |
 
 ## 项目概览
 
@@ -147,8 +151,8 @@ hvigor assembleHap -p product=default -p buildMode=debug
 hvigor assembleHap -p product=default -p buildMode=release
 ```
 
-## 版权
+## 开源协议
 
-Copyright (c) 2026 Ying Studio. All rights reserved.
+本项目采用 MIT License 开源协议。
 
-本项目未使用 MIT、Apache-2.0 等开源许可证。未经授权，不得复制、修改、分发或用于商业用途。
+详细内容请参见 LICENSE 文件。
